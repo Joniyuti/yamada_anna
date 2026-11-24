@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>山田杏奈のバイト全力応援アプリ — 僕の心のヤバイやつ 癒やしコンパニオン</title>
+<style>
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --bg-outer: #0b0e18;
+    --panel-dark: rgba(18, 22, 38, 0.92);
+    --panel-soft: rgba(28, 34, 56, 0.94);
+    --pink: #fb7185;
+    --pink-soft: #fda4af;
+    --amber: #fbbf24;
+    --cream: #fef3c7;
+    --mint: #34d399;
+    --sky: #38bdf8;
+    --text-main: #fffaf5;
+    --text-muted: #cbd5e1;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100dvh;
+    background: radial-gradient(circle at 50% 25%, #231934 0%, #0b0e18 82%);
+    color: var(--text-main);
+    font-family: "Hiragino Maru Gothic ProN", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  /* PC Companion Guide Panels (Shown on desktop >= 960px, hidden on mobile) */
+  .pc-guide-card {
+    display: none;
+    width: 250px;
+    max-height: calc(100dvh - 32px);
+    background: rgba(19, 23, 40, 0.92);
+    border: 1.5px solid rgba(251, 113, 133, 0.45);
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.72);
+    flex-direction: column;
+    gap: 9px;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  @media (min-width: 960px) {
+    .pc-guide-card {
+      display: flex;
+    }
+  }
+
+  .pc-guide-title {
+    font-size: 13.5px;
+    font-weight: 900;
+    color: var(--pink-soft);
+    border-bottom: 1px solid rgba(251, 113, 133, 0.35);
+    padding-bottom: 5px;
+  }
+
+  .key-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 3px 0;
+    border-bottom: 1px dashed rgba(148, 163, 184, 0.2);
+  }
+
+  .ktag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: #2b2140;
+    border: 1px solid #f472b6;
+    color: #fef08a;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  /* Strict 9:16 Portrait Container respecting Android Chrome / Mobile Safari Safe Areas */
+  #app-frame {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    width: min(100vw, calc((100dvh - var(--safe-top) - var(--safe-bottom)) * 9 / 16));
+    height: min(calc(100dvh - var(--safe-top) - var(--safe-bottom)), calc(100vw * 16 / 9));
+    max-height: 100dvh;
+    margin-top: var(--safe-top);
+    margin-bottom: var(--safe-bottom);
+    background: #141829;
+    border: 2px solid rgba(251, 113, 133, 0.55);
+    border-radius: 14px;
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    container-type: inline-size;
+  }
+
+  @media (max-width: 600px) {
+    #app-frame {
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+    }
+  }
+
+  /* Top Shift & Mood HUD */
+  #top-hud {
+    flex: 0 0 auto;
+    background: linear-gradient(180deg, rgba(28, 22, 46, 0.98) 0%, rgba(18, 16, 34, 0.95) 100%);
+    border-bottom: 1.5px solid rgba(251, 113, 133, 0.45);
+    padding: clamp(5px, 1.3cqw, 8px) clamp(8px, 2cqw, 14px);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 25;
+  }
+
+  .hud-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: clamp(9.5px, 2.4cqw, 12.5px);
+    font-weight: 800;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    color: var(--cream);
+    white-space: nowrap;
+  }
+
+  .pill-pink {
+    border-color: rgba(251, 113, 133, 0.65);
+    background: rgba(251, 113, 133, 0.16);
+    color: #ffe4e6;
+  }
+
+  .mini-ctrl-btn {
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(251, 191, 36, 0.55);
+    background: rgba(45, 33, 68, 0.95);
+    color: #fef3c7;
+    font-size: clamp(9.5px, 2.35cqw, 12.5px);
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .mini-ctrl-btn.active {
+    background: linear-gradient(90deg, #be185d, #e11d48);
+    border-color: #fecdd3;
+    color: #ffffff;
+  }
+
+  /* Central Interactive Stage */
+  #stage-viewport {
+    position: relative;
+    flex: 1 1 auto;
+    width: 100%;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  #scene-canvas, #anna-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  #anna-canvas {
+    pointer-events: none;
+  }
+
+  /* Floating Top Stage Chips */
+  .stage-chip-row {
+    position: absolute;
+    top: clamp(6px, 1.6cqw, 10px);
+    left: clamp(8px, 2cqw, 12px);
+    right: clamp(8px, 2cqw, 12px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    z-index: 15;
+    pointer-events: none;
+  }
+
+  .stage-chip {
+    background: rgba(15, 19, 34, 0.78);
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    border-radius: 999px;
+    padding: 3px 9px;
+    font-size: clamp(9.5px, 2.35cqw, 12.5px);
+    font-weight: 800;
+    color: #fef3c7;
+  }
+
+  /* Interactive Sub-Drawer (Snacks / Moods / Outfits / Shift Timer / Memory Cards) */
+  #sub-drawer {
+    position: absolute;
+    left: clamp(7px, 1.8cqw, 12px);
+    right: clamp(7px, 1.8cqw, 12px);
+    top: clamp(34px, 8.5cqw, 46px);
+    background: rgba(16, 20, 36, 0.95);
+    border: 1.5px solid var(--pink);
+    border-radius: 11px;
+    padding: clamp(8px, 2cqw, 12px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.85);
+    display: none;
+    flex-direction: column;
+    gap: 7px;
+    z-index: 28;
+    max-height: 54%;
+    overflow-y: auto;
+  }
+
+  #sub-drawer.active {
+    display: flex;
+  }
+
+  .drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(251, 113, 133, 0.35);
+    padding-bottom: 4px;
+    font-size: clamp(11px, 2.8cqw, 14.5px);
+    font-weight: 900;
+    color: var(--pink-soft);
+  }
+
+  .drawer-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .item-chip-btn {
+    background: linear-gradient(180deg, #282242 0%, #19162e 100%);
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    border-radius: 8px;
+    padding: 7px 8px;
+    color: #fffaf5;
+    font-size: clamp(10.5px, 2.6cqw, 13.5px);
+    font-weight: 800;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .item-chip-btn:hover, .item-chip-btn:active {
+    border-color: var(--pink);
+    background: linear-gradient(180deg, #4c1d42 0%, #2a1228 100%);
+  }
+
+  /* Anna Speech Bubble Box */
+  #dialogue-card {
+    position: absolute;
+    left: clamp(7px, 1.8cqw, 12px);
+    right: clamp(7px, 1.8cqw, 12px);
+    bottom: clamp(7px, 1.8cqw, 12px);
+    background: linear-gradient(180deg, rgba(24, 20, 42, 0.93) 0%, rgba(13, 12, 26, 0.97) 100%);
+    border: 2px solid var(--pink);
+    box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.25), 0 8px 26px rgba(0, 0, 0, 0.85);
+    border-radius: 12px;
+    padding: clamp(8px, 2cqw, 12px) clamp(10px, 2.4cqw, 14px);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 20;
+  }
+
+  .dlg-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  #anna-name-tag {
+    font-size: clamp(12px, 3.05cqw, 16px);
+    font-weight: 900;
+    color: var(--pink-soft);
+  }
+
+  #anna-mood-tag {
+    font-size: clamp(9.5px, 2.35cqw, 12.5px);
+    font-weight: 800;
+    color: var(--amber);
+  }
+
+  #anna-speech-text {
+    font-size: clamp(12px, 3cqw, 15.5px);
+    line-height: 1.54;
+    min-height: clamp(58px, 14.5cqw, 84px);
+    color: #fffaf5;
+    word-break: break-word;
+  }
+
+  .dlg-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: clamp(9.5px, 2.3cqw, 12px);
+    color: #fde68a;
+  }
+
+  /* Bottom 6-Button Cheering & Healing Dock */
+  #bottom-dock {
+    flex: 0 0 auto;
+    background: linear-gradient(180deg, #17142b 0%, #0d0b1a 100%);
+    border-top: 1.5px solid rgba(251, 113, 133, 0.45);
+    padding: clamp(5px, 1.3cqw, 8px) clamp(6px, 1.6cqw, 10px);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(4px, 1cqw, 6px);
+    z-index: 25;
+  }
+
+  .action-tile {
+    background: linear-gradient(180deg, #2d2347 0%, #1b152e 100%);
+    border: 1.2px solid rgba(251, 113, 133, 0.52);
+    border-radius: 8px;
+    padding: clamp(5px, 1.3cqw, 8px) 4px;
+    color: #fffaf5;
+    font-size: clamp(10px, 2.5cqw, 13.5px);
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: transform 0.07s ease, border-color 0.14s ease, background 0.14s ease;
+  }
+
+  .action-tile:hover, .action-tile:active {
+    transform: scale(0.975);
+    border-color: #fef08a;
+    background: linear-gradient(180deg, #9d174d 0%, #500724 100%);
+  }
+
+  .action-tile.cheer-main {
+    background: linear-gradient(180deg, #be185d 0%, #831843 100%);
+    border-color: #fda4af;
+  }
+
+  .key-num {
+    display: inline-block;
+    padding: 0 4px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.38);
+    border: 1px solid rgba(254, 240, 138, 0.55);
+    color: #fef08a;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: clamp(8.5px, 2.05cqw, 11px);
+  }
+
+  /* Toast Banner */
+  #toast-banner {
+    position: absolute;
+    top: 44px;
+    left: 12px;
+    right: 12px;
+    background: rgba(24, 18, 40, 0.96);
+    border: 1.5px solid var(--amber);
+    border-radius: 9px;
+    padding: 7px 11px;
+    font-size: clamp(10.5px, 2.6cqw, 13.5px);
+    font-weight: 800;
+    color: #fef9c3;
+    text-align: center;
+    z-index: 60;
+    display: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85);
+  }
+
+  #toast-banner.show {
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+  <!-- PC Left Companion Guide -->
+  <aside class="pc-guide-card" aria-label="PCキーボード操作ガイド">
+    <div class="pc-guide-title">⌨ PCキーボード操作ガイド</div>
+    <div class="key-line"><span>次の応援ボイスを聞く</span><span class="ktag">Space / Enter</span></div>
+    <div class="key-line"><span>全力応援！</span><span class="ktag">1</span></div>
+    <div class="key-line"><span>お菓子をシェアする</span><span class="ktag">2</span></div>
+    <div class="key-line"><span>癒やし＆深呼吸ガイド</span><span class="ktag">3</span></div>
+    <div class="key-line"><span>なでなで・スキンシップ</span><span class="ktag">4</span></div>
+    <div class="key-line"><span>今の気分を伝える</span><span class="ktag">5</span></div>
+    <div class="key-line"><span>衣装＆背景チェンジ</span><span class="ktag">6</span></div>
+    <div class="key-line"><span>自動つぶやきモード</span><span class="ktag">A</span></div>
+    <div class="key-line"><span>バイトタイマー設定</span><span class="ktag">T</span></div>
+    <div class="key-line"><span>応援カード思い出帳</span><span class="ktag">L</span></div>
+    <div class="key-line"><span>癒やしBGM / SE 切替</span><span class="ktag">M</span></div>
+    <div class="key-line"><span>メニューを閉じる</span><span class="ktag">Esc</span></div>
+    <div style="color:var(--text-muted);font-size:11.5px;margin-top:4px;">
+      ※スマホ・タブレットでは画面上の山田さん（頭・ほっぺ・手）を直接タップしても可愛く反応してくれます！
+    </div>
+  </aside>
+
+  <!-- Main 9:16 Portrait Companion Frame -->
+  <main id="app-frame">
+    <div id="toast-banner" role="status" aria-live="polite"></div>
+
+    <!-- Top Shift & Status Bar -->
+    <header id="top-hud">
+      <div class="hud-row">
+        <span id="shift-timer-pill" class="pill-badge">⏱ バイト経過 00:00:00</span>
+        <span id="healing-gauge-pill" class="pill-badge pill-pink">💗 癒やし度 100%</span>
+        <button id="btn-timer-menu" type="button" class="mini-ctrl-btn" title="バイトタイマー設定 [T]">⏱ 設定 [T]</button>
+      </div>
+      <div class="hud-row">
+        <span id="snack-count-pill" class="pill-badge" style="border-color:rgba(52,211,153,0.45);color:#a7f3d0;">🍩 シェアお菓子: 0個</span>
+        <div style="display:flex;gap:4px;">
+          <button id="btn-auto-cheer" type="button" class="mini-ctrl-btn" title="自動応援つぶやき [A]">✨ 自動応援 [A]</button>
+          <button id="btn-memory-log" type="button" class="mini-ctrl-btn" title="応援カード思い出帳 [L]">💌 思い出 [L]</button>
+          <button id="btn-sound-toggle" type="button" class="mini-ctrl-btn" title="音声切替 [M]">🔊 [M]</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Interactive Character & Ambient Stage -->
+    <section id="stage-viewport">
+      <canvas id="scene-canvas"></canvas>
+      <canvas id="anna-canvas"></canvas>
+
+      <div class="stage-chip-row">
+        <span id="scene-location-chip" class="stage-chip">🌇 夕暮れの帰り道</span>
+        <span id="outfit-badge-chip" class="stage-chip">🎀 制服ブレザー</span>
+      </div>
+
+      <!-- Contextual Sub-Drawer -->
+      <div id="sub-drawer">
+        <div class="drawer-head">
+          <span id="sub-drawer-title">メニュー</span>
+          <button id="btn-close-drawer" type="button" class="mini-ctrl-btn">✕ 閉じる [Esc]</button>
+        </div>
+        <div id="sub-drawer-body"></div>
+      </div>
+
+      <!-- Anna Yamada Dialogue Box -->
+      <div id="dialogue-card">
+        <div class="dlg-top">
+          <span id="anna-name-tag">山田 杏奈</span>
+          <span id="anna-mood-tag">♪ ごきげん応援モード</span>
+        </div>
+        <div id="anna-speech-text"></div>
+        <div class="dlg-bottom">
+          <span id="tap-hint-left">💡 画面や山田さんをタップで反応！</span>
+          <span>▼ 次へ [Space / Enter]</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom 6-Action Interactive Dock -->
+    <footer id="bottom-dock">
+      <button id="act-cheer" type="button" class="action-tile cheer-main"><span>📣 全力応援！</span><span class="key-num">1</span></button>
+      <button id="act-snack" type="button" class="action-tile"><span>🍩 お菓子</span><span class="key-num">2</span></button>
+      <button id="act-breathe" type="button" class="action-tile"><span>🫧 深呼吸</span><span class="key-num">3</span></button>
+      <button id="act-pat" type="button" class="action-tile"><span>👋 なでなで</span><span class="key-num">4</span></button>
+      <button id="act-mood" type="button" class="action-tile"><span>💬 気分トーク</span><span class="key-num">5</span></button>
+      <button id="act-style" type="button" class="action-tile"><span>📸 衣装・背景</span><span class="key-num">6</span></button>
+    </footer>
+  </main>
+
+  <!-- PC Right Companion Status & Tips -->
+  <aside class="pc-guide-card" aria-label="山田杏奈の応援メモ">
+    <div class="pc-guide-title">🎀 山田杏奈の応援メモ</div>
+    <div style="color:#ffe4e6;font-weight:800;">
+      「バイト中も、休憩中も、わたしがずーっとそばで見てるからねっ！」
+    </div>
+    <div style="font-size:12px;color:#cbd5e1;">
+      ・<b>全力応援 [1]：</b>接客や立ち仕事でヘトヘトな時、拳を握って全力でエールを送ってくれます。<br>
+      ・<b>お菓子シェア [2]：</b>肉まん・ピザまん・チョコなどを頬張りながら半分こしてくれます（ほっぺの食べかすにも注目！）。<br>
+      ・<b>深呼吸ガイド [3]：</b>4秒吸って・4秒止めて・6秒吐くリラックス呼吸を一緒にカウントしてくれます。<br>
+      ・<b>なでなで [4]：</b>頭をなでると子犬のように嬉しそうに照れます。
+    </div>
+    <div id="pc-right-stats" style="margin-top:auto;padding-top:8px;border-top:1px solid rgba(251,113,133,0.35);font-size:11.5px;color:#fde68a;">
+      応援回数: 0回 ｜ 思い出カード: 1 / 12枚
+    </div>
+  </aside>
+
+<script>
+(() => {
+  'use strict';
+
+  const STORAGE_KEY = 'anna_yamada_cheer_companion_v1';
+
+  /* =========================================================
+     1. NON-BLOCKING TOAST NOTIFICATION
+     ========================================================= */
+  let toastTimer = null;
+  function showToast(msg, ms = 2600) {
+    const el = document.getElementById('toast-banner');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      el.classList.remove('show');
+    }, ms);
+  }
+
+  /* =========================================================
+     2. GENTLE LO-FI HEALING AUDIO & CUTE SFX ENGINE
+     ========================================================= */
+  class HealingAudio {
+    constructor() {
+      this.ctx = null;
+      this.enabled = true;
+      this.bgmTimer = null;
+      this.step = 0;
+    }
+
+    unlock() {
+      try {
+        if (!this.ctx) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) this.ctx = new AC();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      } catch (_e) {
+        // Ignore audio policy restrictions
+      }
+    }
+
+    toggle() {
+      this.enabled = !this.enabled;
+      if (!this.enabled) {
+        this.stopBgm();
+      } else {
+        this.startBgm();
+      }
+      return this.enabled;
+    }
+
+    tone(freq, dur = 0.25, type = 'sine', vol = 0.028, delay = 0) {
+      if (!this.enabled || !freq) return;
+      this.unlock();
+      if (!this.ctx) return;
+      try {
+        const t = this.ctx.currentTime + delay;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, t);
+        gain.gain.setValueAtTime(vol, t);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + dur + 0.02);
+      } catch (_e) {
+        // Ignore audio scheduling errors
+      }
+    }
+
+    sfxCheer() {
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+        this.tone(f, 0.16, 'triangle', 0.04, i * 0.055);
+      });
+    }
+
+    sfxMunch() {
+      this.tone(440, 0.07, 'sine', 0.038, 0);
+      this.tone(587.33, 0.08, 'sine', 0.038, 0.08);
+      this.tone(783.99, 0.12, 'triangle', 0.035, 0.16);
+    }
+
+    sfxHeart() {
+      this.tone(659.25, 0.14, 'sine', 0.035, 0);
+      this.tone(880.00, 0.22, 'sine', 0.038, 0.07);
+    }
+
+    sfxChime() {
+      [587.33, 739.99, 880.00, 1174.66].forEach((f, i) => {
+        this.tone(f, 0.28, 'sine', 0.03, i * 0.09);
+      });
+    }
+
+    startBgm() {
+      if (this.bgmTimer || !this.enabled) return;
+      // Warm music-box Lo-Fi progression (Fmaj7 -> Em7 -> Dm7 -> Cmaj7)
+      const notes = [
+        659.25, 523.25, 440.00, 523.25,
+        587.33, 493.88, 392.00, 493.88,
+        523.25, 440.00, 349.23, 440.00,
+        493.88, 392.00, 329.63, 392.00
+      ];
+      this.step = 0;
+      this.bgmTimer = setInterval(() => {
+        if (!this.enabled) return;
+        const f = notes[this.step % notes.length];
+        this.tone(f, 0.55, 'sine', 0.015, 0);
+        this.step++;
+      }, 480);
+    }
+
+    stopBgm() {
+      if (this.bgmTimer) {
+        clearInterval(this.bgmTimer);
+        this.bgmTimer = null;
+      }
+    }
+  }
+
+  const audio = new HealingAudio();
+
+  /* =========================================================
+     3. ANNA YAMADA CHARACTER DATA, LINES, SNACKS & MEMORY CARDS
+     ========================================================= */
+  const OUTFITS = [
+    { id: 'uniform', name: '🎀 制服ブレザー', blazer: '#1e293b', ribbon: '#e11d48', shirt: '#ffffff', skirt: '#334155' },
+    { id: 'knit',    name: '🧶 ゆるふわニット', blazer: '#fce7f3', ribbon: '#f43f5e', shirt: '#fff1f2', skirt: '#9f1239' },
+    { id: 'model',   name: '✨ モデル撮影風ワンピ', blazer: '#312e81', ribbon: '#fbbf24', shirt: '#eef2ff', skirt: '#4338ca' }
+  ];
+
+  const SCENES = [
+    { id: 'sunset',  name: '🌇 夕暮れの帰り道' },
+    { id: 'library', name: '📚 図書室の窓辺' },
+    { id: 'cafe',    name: '☕ カフェ休憩室' },
+    { id: 'starry',  name: '🌌 星空のベランダ' }
+  ];
+
+  const CHEER_LINES = [
+    {
+      expr: 'cheer', mood: '📣 全力エール！', cardId: 'c1',
+      text: '「ふぁいとーっ！ バイトがんばってるの、わたしちゃんと見てるからねっ！ あとちょっと、一緒に乗り切ろ〜！」'
+    },
+    {
+      expr: 'sparkle', mood: '✨ キラキラ笑顔', cardId: 'c2',
+      text: '「えへへ、真面目に働いてる姿、すっごくカッコいいよ！ 終わったら美味しいもの食べに行こっ、約束だからね？」'
+    },
+    {
+      expr: 'pout', mood: 'ぷくっ（心配＆やきもち）', cardId: 'c3',
+      text: '「むー……がんばりすぎはダメなんだからね？ わたしのこと忘れるくらい働きすぎたら、ほっぺぷにぷにしちゃうぞー！」'
+    },
+    {
+      expr: 'happy', mood: '♪ ぽかぽか応援', cardId: 'c4',
+      text: '「接客とか立ち仕事って足パンパンになるよね……よしっ、わたしから元気パワー注入〜！ えいっ、とどけっ♪」'
+    },
+    {
+      expr: 'shy', mood: 'ぽっ…（照れ応援）', cardId: 'c5',
+      text: '「そ、その……無理しないでね？ あなたが元気でいてくれるのが、わたしにとって一番うれしいんだから……っ」'
+    },
+    {
+      expr: 'cheer', mood: '💪 気合い満タン！', cardId: 'c6',
+      text: '「ミスしちゃっても大丈夫！ 深呼吸して、もう一回いこっ！ わたしはいつでもあなたの味方だよ！」'
+    }
+  ];
+
+  const SNACK_ITEMS = [
+    {
+      id: 'nikuman', name: '♨ ほかほか肉まん', desc: 'ジューシーで元気回復！',
+      expr: 'munching', mood: 'もぐもぐ幸せ♪', crumb: true, cardId: 'c7',
+      reply: '「はふっ、はふっ……ん〜っ！ 肉まん最高〜！ ほら、半分こしよう？ あーん……えへへ、美味しいねっ♪」'
+    },
+    {
+      id: 'pizzaman', name: '🍕 とろ〜りピザまん', desc: 'チーズが伸びる人気者',
+      expr: 'sparkle', mood: 'チーズびよーん！', crumb: true, cardId: 'c8',
+      reply: '「わあっ、チーズすっごく伸びるよ！ 見て見て！ ……あ、ほっぺにソースついちゃった？ えへへ、拭いて〜♪」'
+    },
+    {
+      id: 'choco', name: '🍫 濃厚ミルクチョコ', desc: '糖分チャージで脳スッキリ',
+      expr: 'happy', mood: 'あま〜い癒やし', crumb: false, cardId: 'c9',
+      reply: '「疲れた時はやっぱり甘いチョコだよね！ ひと粒どうぞっ。わたしももう一個食べちゃお〜っと♪」'
+    },
+    {
+      id: 'milktea', name: '🧋 タピオカミルクティー', desc: 'もちもち食感でほっと一息',
+      expr: 'munching', mood: 'ちゅーっ♪', crumb: false, cardId: 'c10',
+      reply: '「んぐっ……ぷはぁ〜！ ミルクティーしみる〜！ ストローもう一本あるから一緒に飲もっ？」'
+    },
+    {
+      id: 'crepe', name: '🍓 イチゴチョコクレープ', desc: 'ご褒美スイーツの王様',
+      expr: 'sparkle', mood: '特大スイーツ！', crumb: true, cardId: 'c11',
+      reply: '「じゃじゃーん！ バイトがんばってるご褒美クレープ！ 生クリームたっぷりのとこ、一口あげるねっ！」'
+    },
+    {
+      id: 'chips', name: '🥔 のりしおポテチ', desc: 'パリパリ止まらない定番',
+      expr: 'munching', mood: 'パリパリ♪', crumb: true, cardId: 'c12',
+      reply: '「パリッ、サクッ……ん〜、この塩気がたまらないよね！ 休憩時間ずっとこうしていたいなあ〜」'
+    }
+  ];
+
+  const MOOD_TOPICS = [
+    {
+      label: '😪 ちょっと眠い…',
+      expr: 'sleepy', mood: 'うとうと…からのシャキッ！',
+      reply: '「ふぁ〜あ……わかる、わたしも授業中とか眠くなっちゃう……。でもね、あと少しだけ一緒にがんばろ？ 目が覚めるように応援ビーム送るねっ！」'
+    },
+    {
+      label: '💦 身体が疲れた〜',
+      expr: 'worry', mood: 'よしよしケアモード',
+      reply: '「毎日ほんとにえらいよ……！ 肩と背中、ぎゅーって凝ってない？ 帰ったら温かいお風呂に入って、ゆっくり休むんだよ？ 約束！」'
+    },
+    {
+      label: '🔥 あと少しで終わり！',
+      expr: 'cheer', mood: 'ラストスパート！',
+      reply: '「おおっ、ゴール目前だね！！ 最後の仕上げ、バッチリ決めてこいっ！ 終わったら『おつかれさまー！』って思いっきり迎えるからねっ！」'
+    },
+    {
+      label: '☕ 今ちょうど休憩中♪',
+      expr: 'happy', mood: 'まったり休憩タイム',
+      reply: '「わーい、休憩時間だ〜！ 今だけは仕事のこと全部忘れて、わたしとおしゃべりしよっ？ 何食べる？ 何飲む？」'
+    },
+    {
+      label: '🌟 とにかく褒めて！',
+      expr: 'sparkle', mood: '全力べた褒めモード',
+      reply: '「えらい！ すごい！ 世界一がんばってる！！ 忙しいのにちゃんと働いてて、ほんとに尊敬しちゃう……っ！ よしよし、なでなで〜♪」'
+    },
+    {
+      label: '😣 ちょっと落ち込み気味',
+      expr: 'shy', mood: 'そっと寄り添いモード',
+      reply: '「……大丈夫だよ。うまくいかない日だってあるもん。でも、がんばってること、わたしはちゃんと知ってるから。ひとりじゃないからねっ」'
+    }
+  ];
+
+  const MEMORY_CARDS = [
+    { id: 'c1',  title: 'No.01 全力エール！', desc: '初めての全力応援ボイスを聞いた' },
+    { id: 'c2',  title: 'No.02 終わったら約束ね？', desc: 'バイト後の楽しみを約束した' },
+    { id: 'c3',  title: 'No.03 ぷくっとやきもち', desc: '働きすぎを心配されて頬を膨らませた' },
+    { id: 'c4',  title: 'No.04 元気パワー注入♪', desc: '山田から癒やしパワーを受け取った' },
+    { id: 'c5',  title: 'No.05 照れながらの本音', desc: '赤面しながら優しい言葉をもらった' },
+    { id: 'c6',  title: 'No.06 いつでも味方だよ', desc: 'ミスしても励ましてくれる優しさに触れた' },
+    { id: 'c7',  title: 'No.07 ほかほか肉まん半分こ', desc: '肉まんを一緒に食べてほっこりした' },
+    { id: 'c8',  title: 'No.08 ほっぺのピザソース', desc: '食べかすをつけた可愛い笑顔を見た' },
+    { id: 'c9',  title: 'No.09 甘いチョコの魔法', desc: '糖分チャージで疲れが吹き飛んだ' },
+    { id: 'c10', title: 'No.10 タピオカ休憩タイム', desc: 'ミルクティーを一緒に味わった' },
+    { id: 'c11', title: 'No.11 ご褒美イチゴクレープ', desc: '特大スイーツを分け合った' },
+    { id: 'c12', title: 'No.12 パリパリポテチ時間', desc: 'のんびりお菓子タイムを満喫した' }
+  ];
+
+  /* =========================================================
+     4. APPLICATION STATE & PERSISTENCE
+     ========================================================= */
+  const state = {
+    outfitIdx: 0,
+    sceneIdx: 0,
+    expr: 'happy',
+    hasCrumb: false,
+    autoCheer: false,
+    cheerCount: 0,
+    snackCount: 0,
+    healingPct: 100,
+    unlockedCards: ['c1'],
+    shiftStartMs: Date.now(),
+    shiftGoalSec: 0, // 0 = elapsed count-up, >0 = countdown target
+    breathingActive: false,
+    breathingStartMs: 0,
+    particles: [],
+    speakingUntil: 0,
+    cheerIndex: 0
+  };
+
+  function loadPersistedState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (typeof d.outfitIdx === 'number') state.outfitIdx = d.outfitIdx % OUTFITS.length;
+      if (typeof d.sceneIdx === 'number') state.sceneIdx = d.sceneIdx % SCENES.length;
+      if (typeof d.cheerCount === 'number') state.cheerCount = d.cheerCount;
+      if (typeof d.snackCount === 'number') state.snackCount = d.snackCount;
+      if (Array.isArray(d.unlockedCards)) state.unlockedCards = d.unlockedCards;
+    } catch (_e) {
+      // Ignore storage read errors
+    }
+  }
+
+  function savePersistedState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        outfitIdx: state.outfitIdx,
+        sceneIdx: state.sceneIdx,
+        cheerCount: state.cheerCount,
+        snackCount: state.snackCount,
+        unlockedCards: state.unlockedCards
+      }));
+    } catch (_e) {
+      // Ignore storage write errors
+    }
+  }
+
+  function unlockMemoryCard(cardId) {
+    if (!cardId) return;
+    if (!state.unlockedCards.includes(cardId)) {
+      state.unlockedCards.push(cardId);
+      const card = MEMORY_CARDS.find(c => c.id === cardId);
+      if (card) showToast(`💌 新しい思い出カード解放：【${card.title}】`);
+    }
+    savePersistedState();
+    updateHud();
+  }
+
+  /* =========================================================
+     5. HIGH-DPI ANNA YAMADA & SCENE CANVAS RENDERER
+     ========================================================= */
+  function fitCanvas(canvas) {
+    if (!canvas) return { ctx: null, w: 0, h: 0 };
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.max(1, Math.round(rect.width));
+    const h = Math.max(1, Math.round(rect.height));
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    const pw = Math.round(w * dpr);
+    const ph = Math.round(h * dpr);
+    if (canvas.width !== pw || canvas.height !== ph) {
+      canvas.width = pw;
+      canvas.height = ph;
+    }
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx, w, h };
+  }
+
+  function spawnParticles(kind, cx, cy, count = 8) {
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+      const speed = 0.8 + Math.random() * 1.8;
+      state.particles.push({
+        kind,
+        x: cx + (Math.random() - 0.5) * 50,
+        y: cy + (Math.random() - 0.5) * 40,
+        vx: Math.cos(angle) * speed * 0.6,
+        vy: -Math.abs(Math.sin(angle) * speed) - 0.9,
+        life: 1.0,
+        size: 12 + Math.random() * 7
+      });
+    }
+  }
+
+  function drawSceneLayer(ctx, w, h, sceneId, t) {
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    if (sceneId === 'sunset') {
+      grad.addColorStop(0, '#312e81');
+      grad.addColorStop(0.38, '#be185d');
+      grad.addColorStop(0.68, '#fb923c');
+      grad.addColorStop(1, '#fef08a');
+    } else if (sceneId === 'library') {
+      grad.addColorStop(0, '#1e293b');
+      grad.addColorStop(0.5, '#334155');
+      grad.addColorStop(1, '#451a03');
+    } else if (sceneId === 'cafe') {
+      grad.addColorStop(0, '#451a03');
+      grad.addColorStop(0.55, '#78350f');
+      grad.addColorStop(1, '#291509');
+    } else {
+      grad.addColorStop(0, '#090d16');
+      grad.addColorStop(0.55, '#1e1b4b');
+      grad.addColorStop(1, '#312e81');
+    }
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.save();
+    if (sceneId === 'library') {
+      // Soft sunlight window rays
+      ctx.fillStyle = 'rgba(254, 243, 199, 0.14)';
+      ctx.beginPath();
+      ctx.moveTo(w * 0.12, 0);
+      ctx.lineTo(w * 0.58, 0);
+      ctx.lineTo(w * 0.88, h * 0.78);
+      ctx.lineTo(w * 0.05, h * 0.78);
+      ctx.closePath();
+      ctx.fill();
+    } else if (sceneId === 'starry') {
+      // Twinkling stars
+      for (let i = 0; i < 26; i++) {
+        const sx = ((i * 73) % w);
+        const sy = ((i * 41) % (h * 0.65));
+        const alpha = 0.35 + 0.55 * Math.abs(Math.sin(t / 450 + i));
+        ctx.fillStyle = `rgba(254, 249, 195, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(sx, sy, (i % 2) + 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Warm bokeh light orbs
+    for (let i = 0; i < 12; i++) {
+      const bx = ((i * 89 + t * 0.012) % w);
+      const by = h - ((i * 61 + t * 0.018) % h);
+      ctx.fillStyle = i % 2 === 0 ? 'rgba(253, 164, 175, 0.18)' : 'rgba(253, 224, 71, 0.16)';
+      ctx.beginPath();
+      ctx.arc(bx, by, 8 + (i % 4) * 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawAnnaYamada(ctx, w, h, t) {
+    ctx.clearRect(0, 0, w, h);
+
+    const outfit = OUTFITS[state.outfitIdx] || OUTFITS[0];
+    const cx = w * 0.5;
+    const cy = h * 0.45;
+    const sc = Math.max(1.05, Math.min(1.68, w / 235));
+
+    // Gentle breathing & cheerful sway
+    const swayX = Math.sin(t / 650) * 3.5;
+    const bobY = state.expr === 'cheer'
+      ? -Math.abs(Math.sin(t / 150)) * 9
+      : Math.sin(t / 340) * 3.5;
+
+    // Guided 4-4-6 Breathing Ring Overlay if active
+    if (state.breathingActive) {
+      const elapsed = ((t - state.breathingStartMs) / 1000) % 14;
+      let ringScale = 1.0;
+      let phaseText = '';
+      if (elapsed < 4) {
+        const p = elapsed / 4;
+        ringScale = 0.72 + p * 0.48;
+        phaseText = `すって〜… (${Math.ceil(4 - elapsed)}秒)`;
+      } else if (elapsed < 8) {
+        ringScale = 1.20;
+        phaseText = `ゆっくり止めて… (${Math.ceil(8 - elapsed)}秒)`;
+      } else {
+        const p = (elapsed - 8) / 6;
+        ringScale = 1.20 - p * 0.48;
+        phaseText = `ふぅ〜っと吐いて… (${Math.ceil(14 - elapsed)}秒)`;
+      }
+
+      ctx.save();
+      const rRad = Math.min(w, h) * 0.28 * ringScale;
+      const rg = ctx.createRadialGradient(cx, cy - 10, rRad * 0.3, cx, cy - 10, rRad);
+      rg.addColorStop(0, 'rgba(56, 189, 248, 0.08)');
+      rg.addColorStop(1, 'rgba(52, 211, 153, 0.38)');
+      ctx.fillStyle = rg;
+      ctx.beginPath();
+      ctx.arc(cx, cy - 10, rRad, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#6ee7b7';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      ctx.fillStyle = '#ecfdf5';
+      ctx.font = `900 ${Math.max(13, Math.round(w * 0.038))}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(`🫧 ${phaseText}`, cx, h * 0.14);
+      ctx.restore();
+    }
+
+    ctx.save();
+    ctx.translate(cx + swayX, cy + bobY);
+    ctx.scale(sc, sc);
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+
+    // Warm aura glow behind Anna
+    const aura = ctx.createRadialGradient(0, -10, 12, 0, -10, 115);
+    aura.addColorStop(0, 'rgba(251, 113, 133, 0.34)');
+    aura.addColorStop(0.6, 'rgba(253, 224, 71, 0.14)');
+    aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = aura;
+    ctx.beginPath();
+    ctx.arc(0, -10, 115, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Long glossy dark blue-black hair (back layer)
+    ctx.fillStyle = '#13192b';
+    ctx.strokeStyle = '#070a12';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(-40, -28);
+    ctx.quadraticCurveTo(-52, 42, -46, 118);
+    ctx.lineTo(46, 118);
+    ctx.quadraticCurveTo(52, 42, 40, -28);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Torso / Outfit
+    ctx.fillStyle = outfit.blazer;
+    ctx.beginPath();
+    ctx.roundRect(-42, 34, 84, 92, 18);
+    ctx.fill();
+    ctx.stroke();
+
+    // Inner Shirt V-neck
+    ctx.fillStyle = outfit.shirt;
+    ctx.beginPath();
+    ctx.moveTo(-16, 34);
+    ctx.lineTo(0, 62);
+    ctx.lineTo(16, 34);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Ribbon / Bow
+    ctx.fillStyle = outfit.ribbon;
+    ctx.beginPath();
+    ctx.moveTo(0, 48);
+    ctx.lineTo(-12, 42);
+    ctx.lineTo(-10, 56);
+    ctx.closePath();
+    ctx.moveTo(0, 48);
+    ctx.lineTo(12, 42);
+    ctx.lineTo(10, 56);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Cheer arms / Fist pump pose when cheering!
+    if (state.expr === 'cheer') {
+      ctx.fillStyle = outfit.blazer;
+      ctx.beginPath();
+      ctx.roundRect(-56, 14, 18, 42, 9);
+      ctx.roundRect(38, 14, 18, 42, 9);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#ffe4d6';
+      ctx.beginPath();
+      ctx.arc(-47, 12, 8.5, 0, Math.PI * 2);
+      ctx.arc(47, 12, 8.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    // Neck
+    ctx.fillStyle = '#ffe4d6';
+    ctx.fillRect(-8, 18, 16, 20);
+
+    // Face contour (soft oval)
+    ctx.fillStyle = '#ffe4d6';
+    ctx.beginPath();
+    ctx.arc(0, -10, 31, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Soft rosy blush on cheeks
+    const blushAlpha = (state.expr === 'shy' || state.expr === 'happy' || state.expr === 'sparkle') ? 0.55 : 0.32;
+    ctx.fillStyle = `rgba(251, 113, 133, ${blushAlpha})`;
+    ctx.beginPath();
+    ctx.ellipse(-17, -1, 7.5, 4.2, 0, 0, Math.PI * 2);
+    ctx.ellipse(17, -1, 7.5, 4.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Cute snack crumb on cheek when munching!
+    if (state.hasCrumb) {
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(19, 6, 2.3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Eyes (Large expressive warm amber-brown eyes with blink)
+    const blinkCycle = (t % 3800);
+    const isBlinking = blinkCycle > 3650 || state.expr === 'sleepy';
+
+    if (isBlinking) {
+      ctx.strokeStyle = '#1e1b4b';
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.arc(-12, -9, 6.5, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(12, -9, 6.5, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+    } else if (state.expr === 'happy' || state.expr === 'cheer') {
+      // Smiling curved eyes
+      ctx.strokeStyle = '#1e1b4b';
+      ctx.lineWidth = 2.6;
+      ctx.beginPath();
+      ctx.arc(-12, -7, 6.8, 1.15 * Math.PI, 1.85 * Math.PI);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(12, -7, 6.8, 1.15 * Math.PI, 1.85 * Math.PI);
+      ctx.stroke();
+    } else {
+      // Big detailed amber-brown eyes
+      [-12, 12].forEach(ex => {
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(ex, -9, 6.4, 7.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#78350f';
+        ctx.beginPath();
+        ctx.arc(ex, -8.5, 4.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#d97706';
+        ctx.beginPath();
+        ctx.arc(ex, -7.2, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eye highlights
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(ex - 1.8, -10.8, 1.8, 0, Math.PI * 2);
+        ctx.arc(ex + 1.6, -7.2, 0.9, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Upper eyelash line
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.arc(ex, -9.5, 6.8, 1.12 * Math.PI, 1.88 * Math.PI);
+        ctx.stroke();
+      });
+
+      if (state.expr === 'sparkle') {
+        ctx.fillStyle = '#fef08a';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText('✦', -26, -16);
+        ctx.fillText('✦', 20, -16);
+      }
+    }
+
+    // Eyebrows
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 1.8;
+    if (state.expr === 'pout' || state.expr === 'worry') {
+      ctx.beginPath();
+      ctx.moveTo(-18, -18);
+      ctx.lineTo(-7, -20);
+      ctx.moveTo(18, -18);
+      ctx.lineTo(7, -20);
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(-12, -16, 6, 1.2 * Math.PI, 1.8 * Math.PI);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(12, -16, 6, 1.2 * Math.PI, 1.8 * Math.PI);
+      ctx.stroke();
+    }
+
+    // Mouth with lip-sync / expression
+    const isSpeaking = t < state.speakingUntil;
+    const talkOpen = isSpeaking ? Math.abs(Math.sin(t / 75)) * 4.5 : 0;
+    ctx.strokeStyle = '#9f1239';
+    ctx.fillStyle = '#fb7185';
+    ctx.lineWidth = 2;
+
+    if (state.expr === 'pout') {
+      ctx.beginPath();
+      ctx.arc(0, 9, 4.5, 1.15 * Math.PI, 1.85 * Math.PI);
+      ctx.stroke();
+    } else if (state.expr === 'munching') {
+      const chew = Math.abs(Math.sin(t / 110)) * 3.5;
+      ctx.beginPath();
+      ctx.ellipse(0, 7, 5, 2 + chew, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    } else if (talkOpen > 1.2 || state.expr === 'cheer' || state.expr === 'sparkle') {
+      ctx.beginPath();
+      ctx.arc(0, 5, 5.5, 0, Math.PI);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(0, 5, 5, 0.12 * Math.PI, 0.88 * Math.PI);
+      ctx.stroke();
+    }
+
+    // Front Bangs & Side Locks + Signature Hairpins
+    ctx.fillStyle = '#182036';
+    ctx.strokeStyle = '#070a12';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, -14, 33, Math.PI * 0.94, Math.PI * 2.06);
+    ctx.lineTo(35, 36);
+    ctx.lineTo(25, 34);
+    ctx.lineTo(23, -12);
+    ctx.lineTo(10, -18);
+    ctx.lineTo(3, -11);
+    ctx.lineTo(-4, -18);
+    ctx.lineTo(-14, -11);
+    ctx.lineTo(-23, -15);
+    ctx.lineTo(-25, 34);
+    ctx.lineTo(-35, 36);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Hair highlight sheen
+    ctx.strokeStyle = 'rgba(147, 197, 253, 0.35)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(0, -16, 26, 1.22 * Math.PI, 1.78 * Math.PI);
+    ctx.stroke();
+
+    // Twin cute hairpins on left temple
+    ctx.strokeStyle = '#fb7185';
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.moveTo(-25, -22);
+    ctx.lineTo(-16, -24);
+    ctx.moveTo(-26, -18);
+    ctx.lineTo(-17, -20);
+    ctx.stroke();
+
+    ctx.restore();
+
+    // Floating hearts / sparkles / snacks particles
+    for (let i = state.particles.length - 1; i >= 0; i--) {
+      const p = state.particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 0.016;
+      if (p.life <= 0) {
+        state.particles.splice(i, 1);
+        continue;
+      }
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.font = `bold ${Math.round(p.size)}px sans-serif`;
+      ctx.textAlign = 'center';
+      const iconMap = { heart: '💗', star: '✨', snack: '🍩', note: '♪' };
+      ctx.fillText(iconMap[p.kind] || '💗', p.x, p.y);
+      ctx.restore();
+    }
+  }
+
+  function animationLoop(now = 0) {
+    const sceneFit = fitCanvas(document.getElementById('scene-canvas'));
+    if (sceneFit.ctx) {
+      drawSceneLayer(sceneFit.ctx, sceneFit.w, sceneFit.h, SCENES[state.sceneIdx].id, now);
+    }
+
+    const annaFit = fitCanvas(document.getElementById('anna-canvas'));
+    if (annaFit.ctx) {
+      drawAnnaYamada(annaFit.ctx, annaFit.w, annaFit.h, now);
+    }
+
+    requestAnimationFrame(animationLoop);
+  }
+
+  /* =========================================================
+     6. SPEECH, INTERACTIONS & SHIFT COMPANION TIMER
+     ========================================================= */
+  let typeTimer = null;
+
+  function speakLine(text, expr = 'happy', mood = '♪ ごきげん応援モード', crumb = false) {
+    state.expr = expr;
+    state.hasCrumb = crumb;
+    state.speakingUntil = performance.now() + Math.min(3400, text.length * 55);
+    document.getElementById('anna-mood-tag').textContent = mood;
+
+    if (typeTimer) clearInterval(typeTimer);
+    const box = document.getElementById('anna-speech-text');
+    let idx = 0;
+    box.textContent = '';
+
+    typeTimer = setInterval(() => {
+      idx += 2;
+      if (idx >= text.length) {
+        box.textContent = text;
+        clearInterval(typeTimer);
+        typeTimer = null;
+      } else {
+        box.textContent = text.slice(0, idx);
+      }
+    }, 22);
+  }
+
+  function updateHud() {
+    const outfit = OUTFITS[state.outfitIdx];
+    const scene = SCENES[state.sceneIdx];
+    document.getElementById('outfit-badge-chip').textContent = outfit.name;
+    document.getElementById('scene-location-chip').textContent = scene.name;
+    document.getElementById('healing-gauge-pill').textContent = `💗 癒やし度 ${state.healingPct}%`;
+    document.getElementById('snack-count-pill').textContent = `🍩 シェアお菓子: ${state.snackCount}個`;
+    document.getElementById('btn-auto-cheer').classList.toggle('active', state.autoCheer);
+
+    const pcRight = document.getElementById('pc-right-stats');
+    if (pcRight) {
+      pcRight.textContent = `応援回数: ${state.cheerCount}回 ｜ 思い出カード: ${state.unlockedCards.length} / ${MEMORY_CARDS.length}枚`;
+    }
+  }
+
+  function formatDuration(totalSec) {
+    const s = Math.max(0, Math.floor(totalSec));
+    const hh = String(Math.floor(s / 3600)).padStart(2, '0');
+    const mm = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+    const ss = String(s % 60).padStart(2, '0');
+    return `${hh}:${mm}:${ss}`;
+  }
+
+  let lastMilestoneMin = 0;
+  setInterval(() => {
+    const elapsedSec = Math.floor((Date.now() - state.shiftStartMs) / 1000);
+    const pill = document.getElementById('shift-timer-pill');
+
+    if (state.shiftGoalSec > 0) {
+      const rem = Math.max(0, state.shiftGoalSec - elapsedSec);
+      pill.textContent = `⏳ 残り ${formatDuration(rem)}`;
+      if (rem === 0) {
+        state.shiftGoalSec = 0;
+        audio.sfxChime();
+        spawnParticles('star', 160, 220, 14);
+        speakLine(
+          '「おつかれさまーーーっ！！ 目標時間クリアだよっ！ 今日も最後までほんとによくがんばったね、えらいっ♪」',
+          'sparkle',
+          '🎉 バイト完了お祝い！',
+          false
+        );
+      }
+    } else {
+      pill.textContent = `⏱ バイト経過 ${formatDuration(elapsedSec)}`;
+    }
+
+    // Every 15 minutes milestone spontaneous cheer
+    const mins = Math.floor(elapsedSec / 60);
+    if (mins > 0 && mins % 15 === 0 && mins !== lastMilestoneMin) {
+      lastMilestoneMin = mins;
+      audio.sfxHeart();
+      spawnParticles('heart', 160, 220, 10);
+      speakLine(
+        `「もう${mins}分もがんばってるんだね……すごいよ！ 水分補給して、肩の力ふぅ〜って抜いてねっ♪」`,
+        'cheer',
+        `⏱ ${mins}分達成エール！`,
+        false
+      );
+    }
+  }, 1000);
+
+  // Auto-cheer ambient whispers every 13 seconds when toggled ON
+  setInterval(() => {
+    if (!state.autoCheer || state.breathingActive) return;
+    const ambientPool = [
+      { expr: 'happy', mood: '✨ 自動応援モード', text: '「うんうん、いい調子〜♪ わたしここでずっと応援してるからねっ！」' },
+      { expr: 'munching', mood: '🍩 もぐもぐ見守り中', text: '「もぐもぐ……あ、見てた？ 休憩になったら一緒に食べよ〜っと♪」', crumb: true },
+      { expr: 'cheer', mood: '📣 そっとエール', text: '「あとちょっと、あとちょっと〜！ 焦らなくて大丈夫だからねっ！」' },
+      { expr: 'shy', mood: '💗 ほっこり見守り', text: '「がんばってる横顔、なんだかずっと見ていたくなっちゃうな……えへへ」' }
+    ];
+    const pick = ambientPool[Math.floor(Math.random() * ambientPool.length)];
+    spawnParticles('note', 165, 220, 5);
+    speakLine(pick.text, pick.expr, pick.mood, !!pick.crumb);
+  }, 13000);
+
+  /* =========================================================
+     7. INTERACTIVE ACTIONS (1-6 + CANVAS TOUCH ZONES)
+     ========================================================= */
+  function closeDrawer() {
+    document.getElementById('sub-drawer').classList.remove('active');
+  }
+
+  function openDrawer(title, htmlOrBuilder) {
+    const drawer = document.getElementById('sub-drawer');
+    document.getElementById('sub-drawer-title').textContent = title;
+    const body = document.getElementById('sub-drawer-body');
+    body.innerHTML = '';
+    if (typeof htmlOrBuilder === 'function') {
+      htmlOrBuilder(body);
+    } else {
+      body.innerHTML = htmlOrBuilder;
+    }
+    drawer.classList.add('active');
+  }
+
+  function triggerFullCheer() {
+    audio.unlock();
+    closeDrawer();
+    state.breathingActive = false;
+    const item = CHEER_LINES[state.cheerIndex % CHEER_LINES.length];
+    state.cheerIndex++;
+    state.cheerCount++;
+    state.healingPct = Math.min(100, state.healingPct + 5);
+    audio.sfxCheer();
+    spawnParticles('star', 165, 220, 10);
+    speakLine(item.text, item.expr, item.mood, false);
+    unlockMemoryCard(item.cardId);
+  }
+
+  function openSnackDrawer() {
+    audio.unlock();
+    state.breathingActive = false;
+    openDrawer('🍩 山田とお菓子をシェアする', (body) => {
+      const grid = document.createElement('div');
+      grid.className = 'drawer-grid';
+      SNACK_ITEMS.forEach(sn => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'item-chip-btn';
+        btn.innerHTML = `<span>${sn.name}</span><span style="font-size:10px;color:#fde68a;">${sn.desc}</span>`;
+        btn.onclick = () => {
+          closeDrawer();
+          state.snackCount++;
+          state.healingPct = Math.min(100, state.healingPct + 8);
+          audio.sfxMunch();
+          spawnParticles('snack', 165, 230, 9);
+          speakLine(sn.reply, sn.expr, sn.mood, sn.crumb);
+          unlockMemoryCard(sn.cardId);
+        };
+        grid.appendChild(btn);
+      });
+      body.appendChild(grid);
+    });
+  }
+
+  function toggleGuidedBreathing() {
+    audio.unlock();
+    closeDrawer();
+    state.breathingActive = !state.breathingActive;
+    if (state.breathingActive) {
+      state.breathingStartMs = performance.now();
+      audio.sfxChime();
+      spawnParticles('note', 165, 220, 8);
+      speakLine(
+        '「肩の力を抜いて、リングに合わせて一緒に深呼吸しよっ♪ 4秒すって〜、4秒止めて〜、6秒ふぅ〜っと吐くよ〜」',
+        'happy',
+        '🫧 4-4-6 リラックス深呼吸中',
+        false
+      );
+    } else {
+      audio.sfxHeart();
+      speakLine(
+        '「ふぅ〜、すっきりした？ 呼吸が整うと気持ちもラクになるよねっ！ またいつでも一緒にやろ〜♪」',
+        'sparkle',
+        '✨ リフレッシュ完了！',
+        false
+      );
+    }
+  }
+
+  function triggerHeadpat(zone = 'head') {
+    audio.unlock();
+    closeDrawer();
+    state.breathingActive = false;
+    state.healingPct = Math.min(100, state.healingPct + 6);
+    audio.sfxHeart();
+    spawnParticles('heart', 165, 210, 9);
+
+    if (zone === 'cheek') {
+      speakLine(
+        '「ふにゃっ！？ ほっぺぷにぷにするの反則だよ〜……もー、お返しにわたしからも応援パワー送っちゃうんだからっ！」',
+        'shy',
+        '😳 ほっぺぷにぷに反応！',
+        false
+      );
+    } else if (zone === 'hand') {
+      speakLine(
+        '「えへへ、ハイタッチ！ こうやって手を合わせると、なんだか勇気湧いてくるねっ♪」',
+        'cheer',
+        '🙌 元気ハイタッチ！',
+        false
+      );
+    } else {
+      speakLine(
+        '「わぁっ、なでなでだ〜♪ えへへ、もっと撫でてくれてもいいんだよ？ バイトがんばってるご褒美に、わたしもぎゅーって応援するね！」',
+        'happy',
+        '💗 なでなで幸福モード',
+        false
+      );
+    }
+    updateHud();
+  }
+
+  function openMoodDrawer() {
+    audio.unlock();
+    state.breathingActive = false;
+    openDrawer('💬 今の気分を山田に伝える', (body) => {
+      const grid = document.createElement('div');
+      grid.className = 'drawer-grid';
+      MOOD_TOPICS.forEach(tp => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'item-chip-btn';
+        btn.textContent = tp.label;
+        btn.onclick = () => {
+          closeDrawer();
+          state.healingPct = Math.min(100, state.healingPct + 7);
+          audio.sfxHeart();
+          spawnParticles('heart', 165, 220, 8);
+          speakLine(tp.reply, tp.expr, tp.mood, false);
+          updateHud();
+        };
+        grid.appendChild(btn);
+      });
+      body.appendChild(grid);
+    });
+  }
+
+  function openStyleDrawer() {
+    audio.unlock();
+    openDrawer('📸 衣装＆シチュエーション変更', (body) => {
+      const lbl1 = document.createElement('div');
+      lbl1.style.cssText = 'font-size:11px;font-weight:900;color:#fde68a;';
+      lbl1.textContent = '◆ 衣装チェンジ';
+      body.appendChild(lbl1);
+
+      const g1 = document.createElement('div');
+      g1.className = 'drawer-grid';
+      OUTFITS.forEach((of, idx) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'item-chip-btn';
+        b.textContent = of.name;
+        b.onclick = () => {
+          state.outfitIdx = idx;
+          savePersistedState();
+          updateHud();
+          audio.sfxCheer();
+          spawnParticles('star', 165, 220, 8);
+          speakLine(`「じゃーん！ ${of.name}に着替えてみたよっ！ どうかな、似合ってる……？ えへへ♪」`, 'sparkle', '👗 お着替え完了！', false);
+          closeDrawer();
+        };
+        g1.appendChild(b);
+      });
+      body.appendChild(g1);
+
+      const lbl2 = document.createElement('div');
+      lbl2.style.cssText = 'font-size:11px;font-weight:900;color:#fde68a;margin-top:4px;';
+      lbl2.textContent = '◆ 背景チェンジ';
+      body.appendChild(lbl2);
+
+      const g2 = document.createElement('div');
+      g2.className = 'drawer-grid';
+      SCENES.forEach((sc, idx) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'item-chip-btn';
+        b.textContent = sc.name;
+        b.onclick = () => {
+          state.sceneIdx = idx;
+          savePersistedState();
+          updateHud();
+          audio.sfxHeart();
+          speakLine(`「${sc.name}の雰囲気、すごく落ち着くね〜。ここならゆっくりお話しできそう♪」`, 'happy', '🌅 背景チェンジ！', false);
+          closeDrawer();
+        };
+        g2.appendChild(b);
+      });
+      body.appendChild(g2);
+    });
+  }
+
+  function openTimerDrawer() {
+    audio.unlock();
+    openDrawer('⏱ バイト応援タイマー設定', (body) => {
+      const presets = [
+        { label: '⏱ フリー経過計測（リセット）', sec: 0 },
+        { label: '⏳ 30分集中シフト', sec: 30 * 60 },
+        { label: '⏳ 1時間シフト応援', sec: 60 * 60 },
+        { label: '⏳ 2時間シフト応援', sec: 120 * 60 },
+        { label: '⏳ 3時間ロング応援', sec: 180 * 60 },
+        { label: '⚡ 1分お試しカウントダウン', sec: 60 }
+      ];
+      const grid = document.createElement('div');
+      grid.className = 'drawer-grid';
+      presets.forEach(pr => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'item-chip-btn';
+        btn.textContent = pr.label;
+        btn.onclick = () => {
+          state.shiftStartMs = Date.now();
+          state.shiftGoalSec = pr.sec;
+          lastMilestoneMin = 0;
+          closeDrawer();
+          audio.sfxCheer();
+          speakLine(`「${pr.label}をスタートしたよ！ ゴールまでわたしがずっと伴走するからねっ！」`, 'cheer', '⏱ タイマー作動中！', false);
+        };
+        grid.appendChild(btn);
+      });
+      body.appendChild(grid);
+    });
+  }
+
+  function openMemoryDrawer() {
+    audio.unlock();
+    openDrawer(`💌 山田の応援カード思い出帳 (${state.unlockedCards.length}/${MEMORY_CARDS.length})`, (body) => {
+      const grid = document.createElement('div');
+      grid.className = 'drawer-grid';
+      MEMORY_CARDS.forEach(mc => {
+        const unlocked = state.unlockedCards.includes(mc.id);
+        const card = document.createElement('div');
+        card.className = 'item-chip-btn';
+        card.style.opacity = unlocked ? '1' : '0.45';
+        card.innerHTML = `
+          <span style="color:${unlocked ? '#fda4af' : '#94a3b8'};">${unlocked ? mc.title : '🔒 未解放カード'}</span>
+          <span style="font-size:10px;color:#cbd5e1;">${unlocked ? mc.desc : '応援やお菓子シェアで解放！'}</span>
+        `;
+        grid.appendChild(card);
+      });
+      body.appendChild(grid);
+    });
+  }
+
+  /* =========================================================
+     8. EVENT WIRING (MOBILE TOUCH ZONES & PC KEYBOARD)
+     ========================================================= */
+  document.getElementById('stage-viewport').addEventListener('click', (e) => {
+    if (document.getElementById('sub-drawer').classList.contains('active')) {
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relY = (e.clientY - rect.top) / rect.height;
+    const relX = (e.clientX - rect.left) / rect.width;
+
+    if (relY < 0.34) {
+      triggerHeadpat('head');
+    } else if (relY < 0.52 && Math.abs(relX - 0.5) < 0.22) {
+      triggerHeadpat('cheek');
+    } else if (relY < 0.68) {
+      triggerHeadpat('hand');
+    } else {
+      triggerFullCheer();
+    }
+  });
+
+  document.getElementById('act-cheer').onclick = triggerFullCheer;
+  document.getElementById('act-snack').onclick = openSnackDrawer;
+  document.getElementById('act-breathe').onclick = toggleGuidedBreathing;
+  document.getElementById('act-pat').onclick = () => triggerHeadpat('head');
+  document.getElementById('act-mood').onclick = openMoodDrawer;
+  document.getElementById('act-style').onclick = openStyleDrawer;
+
+  document.getElementById('btn-timer-menu').onclick = openTimerDrawer;
+  document.getElementById('btn-memory-log').onclick = openMemoryDrawer;
+  document.getElementById('btn-close-drawer').onclick = closeDrawer;
+
+  document.getElementById('btn-auto-cheer').onclick = () => {
+    audio.unlock();
+    state.autoCheer = !state.autoCheer;
+    updateHud();
+    showToast(state.autoCheer ? '✨ 自動応援つぶやきモード ON（約13秒ごとに話しかけます）' : '自動応援モード OFF');
+  };
+
+  document.getElementById('btn-sound-toggle').onclick = (e) => {
+    const on = audio.toggle();
+    e.target.textContent = on ? '🔊 [M]' : '🔇 [M]';
+    showToast(on ? '🔊 癒やしBGM＆効果音 ON' : '🔇 ミュート中');
+  };
+
+  window.addEventListener('keydown', (e) => {
+    const k = e.key.toLowerCase();
+
+    if (k === 'escape') {
+      closeDrawer();
+      return;
+    }
+    if (k === 'm') {
+      document.getElementById('btn-sound-toggle').click();
+      return;
+    }
+    if (k === 'a') {
+      document.getElementById('btn-auto-cheer').click();
+      return;
+    }
+    if (k === 't') {
+      openTimerDrawer();
+      return;
+    }
+    if (k === 'l') {
+      openMemoryDrawer();
+      return;
+    }
+    if (e.key === ' ' || e.key === 'Enter' || k === '1') {
+      e.preventDefault();
+      triggerFullCheer();
+    } else if (k === '2') {
+      openSnackDrawer();
+    } else if (k === '3') {
+      toggleGuidedBreathing();
+    } else if (k === '4') {
+      triggerHeadpat('head');
+    } else if (k === '5') {
+      openMoodDrawer();
+    } else if (k === '6') {
+      openStyleDrawer();
+    }
+  });
+
+  // Boot & initial greeting
+  loadPersistedState();
+  updateHud();
+  speakLine(
+    '「あ、来た来たっ！ 今日もバイトおつかれさま〜！ あなたががんばってる間、わたしがずーっと応援してるからねっ♪」',
+    'sparkle',
+    '🎀 山田杏奈スタンバイOK！',
+    false
+  );
+  requestAnimationFrame(animationLoop);
+})();
+</script>
+</body>
+</html>
